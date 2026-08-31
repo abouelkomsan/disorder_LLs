@@ -1,9 +1,5 @@
-# Magnetic-Brillouin-zone bookkeeping.
-#
-# These four routines are taken verbatim (up to type annotations and
-# formatting) from `EDfunctions_square.jl` in the original project, so that
-# this package reproduces those conventions exactly.  Nothing else from that
-# file is needed here.
+# Magnetic-Brillouin-zone bookkeeping: the supercell, its reciprocal
+# vectors, the allowed momenta, and folding back into the zone.
 
 """
     lattice(a, b, c, d) -> [a b; c d]

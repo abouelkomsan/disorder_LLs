@@ -33,7 +33,7 @@ end
 """
     tagof(; kwargs...) -> String
 
-Canonical file-name stem, in the same style as disorder_LL.jl.
+Canonical file-name stem for a run.
 """
 function tagof(; kind, nLL, L, V0, xi, nimp)
     k = string(kind)
@@ -53,8 +53,8 @@ Disorder-average sigma_xx(omega, mu) and sigma_xy(omega, mu) (complex: both
 real and imaginary parts), the Hall sum rule Im sum M_xy/dE^2, and the DOS.
 
 `kind`
-  `:pm`   nimp positive + nimp negative delta impurities (as `generate_imp`)
-  `:rand` nimp impurities of random sign +-V0, sign fixed per configuration
+  `:pm`   nimp positive + nimp negative impurities (nimp counts pairs)
+  `:rand` nimp impurities of random sign +-V0, fixed per configuration
 `xi > 0` switches to gaussian impurities of range `xi` (magnetic lengths).
 
 Every observable is evaluated on the *whole* `mugrid` at the cost of one

@@ -5,7 +5,7 @@
     apply_j!(out, U, nLL, Nk, dir)
 
 `out .= J_dir * U` exploiting that J is block-bidiagonal in the LL index and
-the identity in k.  Costs O(dim^2) instead of the O(dim^3) of a dense product.
+the identity in k, so this costs O(dim^2) rather than a dense O(dim^3) product.
 `dir = :x` or `:y`.
 """
 apply_j(U::AbstractMatrix{ComplexF64}, nLL::Int, Nk::Int, dir::Symbol) =
@@ -69,7 +69,7 @@ sigma_elements!(M::AbstractMatrix, Aa::AbstractMatrix, Ab::AbstractMatrix) =
 #  Then
 #         F(p) = F(p-1) + sum_b T[p,b]
 #  so a single row-sum pass (O(dim^2)) plus a cumulative sum gives F for
-#  *every* mu at once, instead of O(dim^2) per mu value.
+#  *every* mu at once, at O(dim^2) in total.
 # ---------------------------------------------------------------------
 
 "cumulative sum with Kahan compensation (the row sums can be large and cancel)"
@@ -115,8 +115,7 @@ end
     sigma_curve(omega, M, E, delta; tol=1e-12) -> Fs
 
 `Fs[p]` = sigma(omega, mu) with `p` states occupied, for every p at once.
-Identical definition to `sigma2` in disorder_LL.jl (including the overall `i`).
-Complex: real and imaginary parts are both meaningful.
+Complex: real and imaginary parts are both meaningful.  Note the overall `i`.
 """
 function sigma_curve(omega::Real, M::AbstractMatrix, E::AbstractVector{<:Real},
                      delta::Real; tol::Real=1e-12, hermitian::Bool=true)

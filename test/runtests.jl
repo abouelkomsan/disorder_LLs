@@ -2,13 +2,11 @@ using DisorderLL
 using Test, LinearAlgebra, Random, Statistics
 
 # =====================================================================
-#  Reference implementations.
-#
-#  These are the ORIGINAL, unoptimised formulas (naive double loops over
-#  occupied/empty pairs, one chemical potential at a time).  The package
-#  replaces them with an O(dim^2)-total cumulative-sum scheme and an
-#  FFT-convolved spectral method; these tests check the replacements
-#  reproduce the originals.
+#  Independent reference implementations: direct double loops over
+#  occupied/empty pairs, one chemical potential at a time, straight from
+#  the definitions.  The package computes the same quantities with a
+#  cumulative-sum sweep over mu and an FFT-convolved spectral method; these
+#  tests check the two agree.
 # =====================================================================
 function ref_sumrule(mu, M, E)
     s = 0.0 + 0.0im
@@ -81,7 +79,7 @@ end
 end
 
 # ---------------------------------------------------------------------
-@testset "chemical-potential sweeps vs naive formulas" begin
+@testset "chemical-potential sweeps vs direct summation" begin
     m   = LLModel(4, lattice(4,0,0,4))
     imp = gen_imp_pm(m, 15; rng=Xoshiro(11))
     E, Mxx, Mxy = solve_config(m, imp, 0.15; xi=0.4)

@@ -5,9 +5,8 @@
     solve_config(m, imp, V0; xi, threaded) -> (E, Mxx, Mxy)
 
 Build H, diagonalise, and return the eigenvalues together with the
-conductivity matrix elements.  Eigenvectors are *not* returned: everything
-the conductivity needs is contained in `Mxx` / `Mxy`, which is what lets the
-pipeline avoid writing 13 MB of eigenvectors per configuration to disk.
+conductivity matrix elements.  Eigenvectors are *not* returned: everything the
+conductivity needs is contained in `Mxx` and `Mxy`.
 Allocating version of `solve_config!`; prefer the latter in hot loops.
 """
 function solve_config(m::LLModel, imp::ImpConfig, V0::Real;
@@ -19,10 +18,10 @@ end
 """
     LLWorkspace(m, nimp)
 
-Per-worker scratch space.  One configuration at dim=900 allocated ~110 MB
-through the naive path (H, eigenvectors, J*U, Ax, Ay, M_xx, M_xy, V tables);
-with many threads that alone put the run in the garbage collector.  Reusing a
-workspace leaves only the LAPACK eigenvector matrix.
+Per-worker scratch space for `solve_config!`.  A configuration needs several
+`dim x dim` complex arrays (H, J*U, Ax, Ay, M_xx, M_xy) plus the V tables;
+reusing them leaves the LAPACK eigenvector matrix as the only large
+allocation per configuration, which matters when many threads run at once.
 """
 struct LLWorkspace
     H  :: Matrix{ComplexF64}

@@ -7,12 +7,8 @@
 `pos` is a `2 x nimp` matrix of impurity positions in the real-space supercell,
 `str` the (fixed!) impurity strengths.
 
-NOTE on a bug in the original code: `V_rand(q,V0,imp_loc)` in disorder_LL.jl
-draws `impsgn = rand([-1,1])` *inside* the q-loop, so the sign of every
-impurity is re-randomised for every matrix element.  The resulting matrix is
-not the Fourier transform of any potential.  Here the strengths are drawn once
-per configuration, which is both correct and what makes the fast
-V(q)-tabulation possible.
+The strengths are drawn once per configuration, so that V(q) is the Fourier
+transform of a definite potential.
 """
 struct ImpConfig
     pos :: Matrix{Float64}      # 2 x nimp
@@ -29,8 +25,9 @@ end
 """
     gen_imp_pm(m, nimp; rng)
 
-`nimp` positive plus `nimp` negative impurities (the `imp_loc_plus /
-imp_loc_minus` convention of disorder_LL.jl), strengths +-V0 applied later.
+`nimp` positive plus `nimp` negative impurities; the strength `V0` is applied
+later, in `Vtable`.  Note that `nimp` counts *pairs*: there are `2*nimp`
+scatterers in total.
 """
 function gen_imp_pm(m::LLModel, nimp::Int; rng=Random.default_rng(), kwargs...)
     T1, T2 = supercell(m; kwargs...)
@@ -68,9 +65,7 @@ the integer q grid, where `f = 1` (delta impurities) or
 `f = exp(-|q|^2 xi^2/2)` (gaussian impurities).
 
 The separability `exp(-i q.r) = A_r^{q1} B_r^{q2}` with `A_r = exp(-i g1.r)`,
-`B_r = exp(-i g2.r)` turns the whole table into one `zgemm`.  The original
-code evaluated the impurity sum *inside* the matrix-element loop, i.e.
-`dim^2/2 * (2M+1)^2 * nimp` complex exponentials per configuration.
+`B_r = exp(-i g2.r)` turns the whole table into one `zgemm`.
 """
 function Vtable(m::LLModel, imp::ImpConfig, V0::Real; xi::Real=0.0)
     nimp = size(imp.pos, 2)

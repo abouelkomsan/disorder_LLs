@@ -11,10 +11,9 @@ Pre-computes every disorder-independent ingredient of the Hamiltonian:
                 full integer q-grid, for every LL pair (n1<=n2)
 * `Pk`, `EPb`, `Pbk`   the pure phase factors, as lookup tables
 
-Building `LLModel` once and reusing it for every disorder configuration is
-where a large part of the speed-up comes from: in the original code the
-Laguerre polynomials, `projector` calls and `exp`s were recomputed inside the
-innermost loop, i.e. `dim^2 * (2M+1)^2` times per configuration.
+`LLModel` depends only on the geometry, not on the disorder sample, so build
+it once and reuse it for every configuration: the Laguerre polynomials, the
+Brillouin-zone folds and the phase factors are then all lookups.
 """
 struct LLModel
     nLL     :: Int
@@ -27,7 +26,7 @@ struct LLModel
     g1      :: Vector{Float64}
     g2      :: Vector{Float64}
     cg      :: Float64                     # cross(g1,g2)
-    scale   :: Float64                     # 1/(sqrt(3)*a0*Nk/2)  (as in disorder_LL.jl)
+    scale   :: Float64                     # 1/(sqrt(3)*a0*Nk/2)
     # --- q-grid bookkeeping -------------------------------------------------
     q1range :: UnitRange{Int}
     q2range :: UnitRange{Int}
@@ -68,7 +67,7 @@ function LLModel(nLL::Int, klattice::AbstractMatrix; M::Int=2,
     for m in -M:M, n in -M:M
         b = (m*kl[1,1] + n*kl[2,1], m*kl[1,2] + n*kl[2,2])
         push!(blabel, b)
-        # exactly the criterion of disorder_LL.jl: eta = +1 iff b/2 folds to 0
+        # eta = +1 iff b/2 is itself a reciprocal supercell vector
         push!(eta, projector([b[1]/2, b[2]/2], kl)[1] == [0,0] ? 1.0 : -1.0)
     end
     nb = length(blabel)
@@ -108,8 +107,8 @@ function LLModel(nLL::Int, klattice::AbstractMatrix; M::Int=2,
         for idx in 1:nq
             x  = qnorm2[idx]
             qx = qvecx[idx]; qy = qvecy[idx]
-            # branch of disorder_LL.jl: (n2>n1) -> ((qx-i qy)/sqrt2)^ndiff
-            #                           (n2<=n1)-> (-(qx+i qy)/sqrt2)^ndiff
+            # (n2>n1)  -> ((qx - i qy)/sqrt2)^ndiff
+            # (n2<=n1) -> (-(qx + i qy)/sqrt2)^ndiff
             z = n2 > n1 ? (qx - im*qy)/sqrt(2) : -(qx + im*qy)/sqrt(2)
             Ftab[ip, idx] = exp(-x/4) * pref * laguerre_gen(nmin, ndiff, x/2) * z^ndiff
         end
