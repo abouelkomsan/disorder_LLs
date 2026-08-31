@@ -1,0 +1,7 @@
+Manifest.toml
+output/
+*.jld2
+*.jld
+*.pdf
+*.png
+.DS_Store
